@@ -40,6 +40,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // --- Import klucza prywatnego RSA (PKCS#8) dla RS256 ---
+const privateKeyPem = PRIVATE_KEY_PEM.replace(/\\n/g, '\n');
 const alg = 'RS256';
 const privateKey = await importPKCS8(PRIVATE_KEY_PEM, alg);
 
@@ -77,7 +78,7 @@ app.post('/sign-jwt', checkApiKey, async (req, res) => {
       iss = ISS,               // issuer (opcjonalnie)
       aud = AUD,               // audience (opcjonalnie)
       sub,                     // subject (opcjonalnie)
-      expiresIn = '5m',        // np. "5m", "1h", "3600s"
+      expiresIn = '3600s',        // np. "5m", "1h", "3600s"
       notBefore,               // np. "0s", "10s"
       jti                      // opcjonalny identyfikator tokena
     } = req.body || {};
