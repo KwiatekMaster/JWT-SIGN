@@ -40,9 +40,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // --- Import klucza prywatnego RSA (PKCS#8) dla RS256 ---
-const privateKeyPem = PRIVATE_KEY_PEM.replace(/\\n/g, '\n');
-const alg = 'RS256';
-const privateKey = await importPKCS8(PRIVATE_KEY_PEM, alg);
+const normalizePrivateKey = (key) =>
+  key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
+
+const privateKeyPem = normalizePrivateKey(PRIVATE_KEY_PEM);
+const privateKey = await importPKCS8(privateKeyPem, 'RS256');
 
 // Wyprowadzenie JWK publicznego i zbudowanie JWKS:
 const publicJwk = await exportJWK(privateKey);
