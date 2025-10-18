@@ -13,8 +13,12 @@ app.post('/sign-google-jwt', async (req, res) => {
       return res.status(400).json({ error: 'target_audience is required' });
     }
 
-    // Autoryzacja z kluczem prywatnym Google
+    // ✅ PRAWDŁOWE użycie zmiennych środowiskowych z Render.com
     const auth = new GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,        // ← Zmienna środowiskowa
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')  // ← Zmienna środowiskowa
+      },
       scopes: ['https://www.googleapis.com/auth/drive'],
     });
 
@@ -41,7 +45,11 @@ app.post('/sign-google-jwt', async (req, res) => {
 
 // Endpoint zdrowia
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', service: 'Google JWT Signer' });
+  res.json({ 
+    status: 'OK', 
+    service: 'Google JWT Signer',
+    client_email: process.env.GOOGLE_CLIENT_EMAIL ? 'Configured' : 'Missing' // ← Debug info
+  });
 });
 
 const PORT = process.env.PORT || 3000;
