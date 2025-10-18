@@ -44,7 +44,8 @@ const normalizePrivateKey = (key) =>
   key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
 
 const privateKeyPem = normalizePrivateKey(PRIVATE_KEY_PEM);
-const privateKey = await importPKCS8(privateKeyPem, 'RS256');
+const alg = 'RS256';
+const privateKey = await importPKCS8(privateKeyPem, alg);
 
 // Wyprowadzenie JWK publicznego i zbudowanie JWKS:
 const publicJwk = await exportJWK(privateKey);
