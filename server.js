@@ -22,6 +22,12 @@ const {
   AUD                      // domyślny audience (opcjonalnie)
 } = process.env;
 
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+
 if (!API_KEY) console.warn('WARN: Brak API_KEY (uwierzytelnianie wyłączone).');
 if (!PRIVATE_KEY_PEM) throw new Error('Brak PRIVATE_KEY_PEM w ENV.');
 if (!KID) console.warn('WARN: Brak KID — JWKS będzie miał kid=null.');
@@ -75,6 +81,7 @@ app.get('/.well-known/jwks.json', (req, res) => {
 // Podpis JWT RS256
 app.post('/sign-jwt', checkApiKey, async (req, res) => {
   try {
+    console.log('Received /sign-jwt request body:', req.body);
     const {
       payload = {},            // dowolny JSON do umieszczenia w JWT
       header = {},             // dodatkowe pola protected header, np. typ
@@ -85,12 +92,12 @@ app.post('/sign-jwt', checkApiKey, async (req, res) => {
       notBefore,               // np. "0s", "10s"
       jti                      // opcjonalny identyfikator tokena
     } = req.body || {};
-
+    
     // Bezpieczeństwo: minimalna weryfikacja typu
     if (typeof payload !== 'object' || Array.isArray(payload)) {
       return res.status(400).json({ error: 'payload must be an object' });
     }
-
+  
     // Budowa JWT:
     let jwtBuilder = new SignJWT(payload)
       .setProtectedHeader({
@@ -109,12 +116,12 @@ app.post('/sign-jwt', checkApiKey, async (req, res) => {
     if (notBefore) jwtBuilder = jwtBuilder.setNotBefore(notBefore);
 
     const token = await jwtBuilder.sign(privateKey);
-
+    
     // Dodatkowo zwracamy thumbprint klucza (kid lub sha256 z n+e) — bywa przydatne
     const thumbprint = KID || createHash('sha256')
       .update(JSON.stringify({ e: publicJwk.e, kty: publicJwk.kty, n: publicJwk.n }))
       .digest('hex');
-
+console.log('Generated token successfully');
     res.json({
       token,
       token_type: 'JWT',
@@ -124,8 +131,8 @@ app.post('/sign-jwt', checkApiKey, async (req, res) => {
       expires_in_hint: expiresIn
     });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'signing_failed' });
+    console.error('Error in /sign-jwt:', e);
+   res.status(500).json({ error: 'signing_failed', message: e.message });
   }
 });
 
