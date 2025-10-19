@@ -55,6 +55,12 @@ const privateKey = await importPKCS8(privateKeyPem, alg);
 
 // Wyprowadzenie JWK publicznego i zbudowanie JWKS:
 const publicJwk = await exportJWK(privateKey);
+delete publicJwk.d;
+delete publicJwk.p;
+delete publicJwk.q;
+delete publicJwk.dp;
+delete publicJwk.dq;
+delete publicJwk.qi;
 publicJwk.use = 'sig';
 publicJwk.alg = alg;
 publicJwk.kid = KID || null;
