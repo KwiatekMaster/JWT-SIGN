@@ -76,6 +76,7 @@ app.get('/health', (req, res) => {
 // JWKS endpoint
 app.get('/.well-known/jwks.json', (req, res) => {
   res.json({ keys: [publicJwk] });
+  console.log('publicJwk:', publicJwk);
 });
 
 // Podpis JWT RS256
